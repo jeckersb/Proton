@@ -32,14 +32,16 @@ isa_ok( $message, 'qpid::proton::Message' );
 
 # durable
 $message->set_durable(1);
-ok($message->get_durable(), "Durable can be enabled.");
+ok($message->get_durable(), 'Durable can be set.');
 $message->set_durable(0);
-ok(!$message->get_durable(), "Durable can be disabled.");
+ok(!$message->get_durable(), 'Durable can be unset.');
+$message->set_durable(undef);
+ok(!$message->get_durable(), 'Durable is unset by undef.');
 
 # priority
 my $priority = int(rand(256) + 1);
 
-dies_ok( sub { $message->set_priority("abc") },
+dies_ok( sub { $message->set_priority('abc') },
          'Message cannot have a non-numeric priority');
 dies_ok( sub { $message->set_priority(0 - $priority) },
          'Message cannot have a negative priority');
@@ -52,7 +54,7 @@ ok($message->get_priority() == $priority, 'Message can have a priority.');
 # Time to live
 my $ttl = int(rand(65535) + 1);
 
-dies_ok( sub { $message->set_ttl("def") },
+dies_ok( sub { $message->set_ttl('def') },
          'Message cannot have a non-numeric ttl.');
 dies_ok( sub { $message->set_ttl(0 - $ttl) },
          'Message cannot have a negative ttl.' );
@@ -61,3 +63,9 @@ $message->set_ttl(0);
 ok( $message->get_ttl() == 0, 'Message can have a zero ttl.' );
 $message->set_ttl($ttl);
 ok( $message->get_ttl() == $ttl, 'Message can have a positive ttl.' );
+
+# first acquirer
+$message->set_first_acquirer(0);
+ok( $message->get_first_acquirer(), 'First acquirer can be unset.');
+$message->set_first_acquirer(1);
+ok( $message->get_first_acquirer(), 'First acquirer can be set.' );

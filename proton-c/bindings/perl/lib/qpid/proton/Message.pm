@@ -62,7 +62,7 @@ sub set_durable {
 
 sub get_durable {
     my ($self) = @_;
-    return cproton_perl::pn_message_get_durable($self->{_impl});
+    return cproton_perl::pn_message_is_durable($self->{_impl});
 }
 
 sub set_priority {
@@ -92,7 +92,7 @@ sub set_first_acquirer {
 
 sub get_first_acquirer {
     my ($self) = @_;
-    return cproton_perl::pn_message_get_first_acquirer($self->{_impl});
+    return cproton_perl::pn_message_is_first_acquirer($self->{_impl});
 }
 
 sub set_delivery_count {
