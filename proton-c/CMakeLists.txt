@@ -181,6 +181,7 @@ option(ENABLE_WARNING_ERROR "Consider compiler warnings to be errors" ${DEFAULT_
 option(ENABLE_UNDEFINED_ERROR "Check for unresolved library symbols" ${DEFAULT_UNDEFINED_ERROR})
 
 # Set any additional compiler specific flags
+set (COMPILE_CODE_GENERATION_OPTIONS "")
 if (CMAKE_COMPILER_IS_GNUCC)
   if (ENABLE_WARNING_ERROR)
     set (WERROR "-Werror")
@@ -207,6 +208,11 @@ if (CMAKE_COMPILER_IS_GNUCC)
     set (CATCH_UNDEFINED "-Wl,--no-undefined")
     set (ALLOW_UNDEFINED "-Wl,--allow-shlib-undefined")
   endif (ENABLE_UNDEFINED_ERROR)
+
+  if ((${GCC_VERSION} VERSION_EQUAL "4.0.0") OR (${GCC_VERSION} VERSION_GREATER "4.0.0"))
+    set (COMPILE_CODE_GENERATION_OPTIONS "-fvisibility=hidden")
+  endif ((${GCC_VERSION} VERSION_EQUAL "4.0.0") OR (${GCC_VERSION} VERSION_GREATER "4.0.0"))
+
 endif (CMAKE_COMPILER_IS_GNUCC)
 
 find_package(SWIG)
@@ -250,13 +256,13 @@ set (qpid-proton-core
 set_source_files_properties (
     ${qpid-proton-core}
     PROPERTIES
-    COMPILE_FLAGS "${COMPILE_WARNING_FLAGS} ${COMPILE_LANGUAGE_FLAGS}"
+    COMPILE_FLAGS "${COMPILE_WARNING_FLAGS} ${COMPILE_LANGUAGE_FLAGS} ${COMPILE_CODE_GENERATION_OPTIONS}"
 )
 
 set_source_files_properties (
     ${qpid-proton-platform}
     PROPERTIES
-    COMPILE_FLAGS "${COMPILE_WARNING_FLAGS} ${COMPILE_PLATFORM_FLAGS}"
+    COMPILE_FLAGS "${COMPILE_WARNING_FLAGS} ${COMPILE_PLATFORM_FLAGS} ${COMPILE_CODE_GENERATION_OPTIONS}"
     COMPILE_DEFINITIONS "${PLATFORM_DEFINITIONS}"
 )
 

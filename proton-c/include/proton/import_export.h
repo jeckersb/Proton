@@ -40,8 +40,15 @@
   //
   // Non-Windows (Linux, etc.) definitions:
   //
-#  define PN_EXPORT
-#  define PN_IMPORT
+  // Make use of GCC visibility attribute GNU GCC >=4
+  //
+#  if defined(__GNUC__) && __GNUC__ >= 4
+#    define PN_EXPORT __attribute__ ((visibility ("default")))
+#    define PN_IMPORT __attribute__ ((visibility ("default")))
+#  else
+#    define PN_EXPORT
+#    define PN_IMPORT
+#  endif
 #endif
 
 
