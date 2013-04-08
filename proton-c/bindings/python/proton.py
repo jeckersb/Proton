@@ -30,7 +30,7 @@ The proton APIs consist of the following classes:
 
 """
 
-from cproton import *
+from _cproton import *
 try:
   import uuid
 except ImportError:
