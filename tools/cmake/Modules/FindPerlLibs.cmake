@@ -30,17 +30,37 @@ if(NOT PERLLIBS_FOUND)
   # if either the library path is not found not set at all
   # then do our own search
   IF ( PERL_LIBRARY MATCHES .*-NOTFOUND OR NOT PERL_LIBRARY )
+      MESSAGE(STATUS "STILL NO PERL LIBRARY! Trying the hard way...")
       EXECUTE_PROCESS ( COMMAND ${PERL_EXECUTABLE}
                         -MConfig -e "print \$Config{libperl}"
                         OUTPUT_VARIABLE PERL_OUTPUT
                         RESULT_VARIABLE PERL_RETURN_VALUE )
 
+      MESSAGE(STATUS "PERL_OUTPUT=${PERL_OUTPUT}")
+      MESSAGE(STATUS "PERL_RETURN_VALUE=${PERL_RETURN_VALUE}")
+      MESSAGE(STATUS "PERL_INCLUDE_PATH=${PERL_INCLUDE_PATH}")
+
       IF ( NOT PERL_RETURN_VALUE )
-        FIND_LIBRARY ( PERL_LIBRARY NAMES ${PERL_OUTPUT}
-                                    PATHS ${PERL_INCLUDE_PATH} )
+        MESSAGE(STATUS "NOT PERL_RETURN_VALUE 2")
+        MESSAGE(STATUS "SEARCHING A LIST OF PATHS FOR ${PERL_OUTPUT}")
+
+        SET(PERL_LIBRARY_PATHS ${PERL_INCLUDE_PATH}
+                               /usr/local/lib
+                               /usr/local/lib64
+                               /usr/lib
+                               /usr/lib64)
+
+        MESSAGE(STATUS "PERL_LIBRARY_PATHS=${PERL_LIBRARY_PATHS}")
+
+        MESSAGE(STATUS "Searching ${PERL_LIBRARY_PATH} for ${PERL_OUTPUT}")
+        FIND_LIBRARY(PERL_LIBRARY libperl.so.5.12.4
+                                  PATHS ${PERL_LIBRARY_PATHS})
+        MESSAGE(STATUS "PERL_LIBRARY=${PERL_LIBRARY}")
 
       ENDIF ( NOT PERL_RETURN_VALUE )
   ENDIF ( PERL_LIBRARY MATCHES .*-NOTFOUND OR NOT PERL_LIBRARY )
+
+  MESSAGE(STATUS "PERL_LIBRARY=${PERL_LIBRARY}")
 
   IF ( PERL_LIBRARY )
     MESSAGE ( STATUS "Found PerlLibs: ${PERL_LIBRARY}" )
