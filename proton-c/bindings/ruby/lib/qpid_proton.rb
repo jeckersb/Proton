@@ -22,6 +22,7 @@ require "date"
 
 require "qpid_proton/described"
 require "qpid_proton/mapping"
+require "qpid_proton/numbers"
 require "qpid_proton/array"
 require "qpid_proton/hash"
 require "qpid_proton/exceptions"

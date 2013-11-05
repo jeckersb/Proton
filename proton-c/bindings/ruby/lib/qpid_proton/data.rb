@@ -439,7 +439,7 @@ module Qpid
       # If the current node is an unsigned byte, returns its value. Otherwise,
       # it reutrns 0.
       def ubyte
-        Cproton.pn_data_get_ubyte(@data)
+        create_proton_fixnum(Cproton.pn_data_get_ubyte(@data))
       end
 
       # Puts a byte value.
@@ -454,7 +454,7 @@ module Qpid
       # If the current node is an byte, returns its value. Otherwise,
       # it returns 0.
       def byte
-        Cproton.pn_data_get_byte(@data)
+        create_proton_fixnum(Cproton.pn_data_get_byte(@data))
       end
 
       # Puts an unsigned short value.
@@ -469,7 +469,7 @@ module Qpid
       # If the current node is an unsigned short, returns its value. Otherwise,
       # it returns 0.
       def ushort
-        Cproton.pn_data_get_ushort(@data)
+        create_proton_fixnum(Cproton.pn_data_get_ushort(@data))
       end
 
       # Puts a short value.
@@ -484,7 +484,7 @@ module Qpid
       # If the current node is a short, returns its value. Otherwise,
       # returns a 0.
       def short
-        Cproton.pn_data_get_short(@data)
+        create_proton_fixnum(Cproton.pn_data_get_short(@data))
       end
 
       # Puts an unsigned integer value.
@@ -501,7 +501,7 @@ module Qpid
       # If the current node is an unsigned int, returns its value. Otherwise,
       # returns 0.
       def uint
-        Cproton.pn_data_get_uint(@data)
+        create_proton_fixnum(Cproton.pn_data_get_uint(@data))
       end
 
       # Puts an integer value.
@@ -516,7 +516,7 @@ module Qpid
       # If the current node is an integer, returns its value. Otherwise,
       # returns 0.
       def int
-        Cproton.pn_data_get_int(@data)
+        create_proton_fixnum(Cproton.pn_data_get_int(@data))
       end
 
       # Puts a character value.
@@ -548,7 +548,7 @@ module Qpid
       # If the current node is an unsigned long, returns its value. Otherwise,
       # returns 0.
       def ulong
-        Cproton.pn_data_get_ulong(@data)
+        create_proton_fixnum(Cproton.pn_data_get_ulong(@data))
       end
 
       # Puts a long value.
@@ -562,7 +562,7 @@ module Qpid
 
       # If the current node is a long, returns its value. Otherwise, returns 0.
       def long
-        Cproton.pn_data_get_long(@data)
+        create_proton_fixnum(Cproton.pn_data_get_long(@data))
       end
 
       # Puts a timestamp value.
@@ -593,7 +593,7 @@ module Qpid
       # If the current node is a float, returns its value. Otherwise,
       # returns 0.
       def float
-        Cproton.pn_data_get_float(@data)
+        create_proton_float(Cproton.pn_data_get_float(@data))
       end
 
       # Puts a double value.
@@ -608,7 +608,7 @@ module Qpid
       # If the current node is a double, returns its value. Otherwise,
       # returns 0.
       def double
-        Cproton.pn_data_get_double(@data)
+        create_proton_float(Cproton.pn_data_get_double(@data))
       end
 
       # Puts a decimal32 value.
@@ -785,6 +785,17 @@ module Qpid
           return err
         end
       end
+
+      def create_proton_fixnum(value)
+        value_type = self.type
+        Qpid::Proton::ProtonFixnum.new(value, value_type)
+      end
+
+      def create_proton_float(value)
+        value_type = self.type
+        Qpid::Proton::ProtonFloat.new(value, value_type)
+      end
+
     end
   end
 end

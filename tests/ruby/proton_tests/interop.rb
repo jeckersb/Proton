@@ -64,6 +64,25 @@ class InteropTest < Test::Unit::TestCase
     assert_equal(result.proton_array_header, header)
   end
 
+  def assert_hash_next(expected, debug = false)
+    assert @data.next
+    assert_equal(Qpid::Proton::MAP, @data.type)
+    result = @data.type.get(@data)
+
+    target = expected.clone
+    matched = true
+    result.each_pair do |k,v|
+      if target.has_key? k
+        deleted = target.delete(k)
+        matched = false unless deleted == v
+      else
+        matched = false
+      end
+    end
+    assert matched && target.empty?
+
+  end
+
   def test_message
     decode_message_file("message")
     assert_next(Qpid::Proton::STRING, "hello")
@@ -133,9 +152,9 @@ class InteropTest < Test::Unit::TestCase
 
   def test_maps
     decode_data_file("maps")
-    assert_next(Qpid::Proton::MAP, {"one" => 1, "two" => 2, "three" => 3 })
-    assert_next(Qpid::Proton::MAP, {1 => "one", 2 => "two", 3 => "three"})
-    assert_next(Qpid::Proton::MAP, {})
+    assert_hash_next({"one" => 1, "two" => 2, "three" => 3 }, true)
+    assert_hash_next({1 => "one", 2 => "two", 3 => "three"}, true)
+    assert_hash_next({})
     assert !@data.next
   end
 end
