@@ -22,6 +22,8 @@
 
 set(CMAKE_SWIG_FLAGS "-threads")
 
+set(CHECK_SYSINSTALL_PYTHON ON CACHE INTERNAL "")
+
 include_directories (${PYTHON_INCLUDE_PATH})
 if (BUILD_WITH_CXX)
    SET_SOURCE_FILES_PROPERTIES(cproton.i PROPERTIES CPLUSPLUS ON)
@@ -74,7 +76,7 @@ if (CHECK_SYSINSTALL_PYTHON)
 
 else ()
   # install the bindings using the CMAKE path variables:
-  set (PYTHON_SITEARCH_PACKAGES ${BINDINGS_DIR}/python)
+  set (PYTHON_SITEARCH_PACKAGES ${BINDINGS_DIR}/python CACHE INTERNAL "")
 
   install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} -m py_compile cproton.py
                                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})")
