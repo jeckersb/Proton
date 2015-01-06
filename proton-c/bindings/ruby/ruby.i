@@ -567,4 +567,13 @@ bool pn_ssl_get_protocol_name(pn_ssl_t *ssl, char *OUTPUT, size_t MAX_OUTPUT_SIZ
 %}
 %ignore pn_record_get;
 
+%rename(pn_collector_put) wrap_pn_collector_put;
+%inline %{
+  pn_event_t *wrap_pn_collector_put(pn_collector_t *collector, void *context,
+                               pn_event_type_t type) {
+    return pn_collector_put(collector, PN_RBREF, context, type);
+  }
+  %}
+%ignore pn_collector_put;
+
 %include "proton/cproton.i"
