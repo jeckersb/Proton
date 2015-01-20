@@ -576,4 +576,18 @@ bool pn_ssl_get_protocol_name(pn_ssl_t *ssl, char *OUTPUT, size_t MAX_OUTPUT_SIZ
   %}
 %ignore pn_collector_put;
 
+%rename(pn_sasl_recv) wrap_pn_sasl_recv;
+%inline %{
+  ssize_t wrap_pn_sasl_recv(pn_sasl_t *sasl, char *OUTPUT, size_t *OUTPUT_SIZE) {
+    ssize_t size = pn_sasl_recv(sasl, OUTPUT, *OUTPUT_SIZE);
+    if (size >= 0) {
+      *OUTPUT_SIZE = size;
+    } else {
+      *OUTPUT_SIZE = 0;
+    }
+    return size;
+  }
+  %}
+%ignore pn_sasl_recv;
+
 %include "proton/cproton.i"
