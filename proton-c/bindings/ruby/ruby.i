@@ -590,4 +590,18 @@ bool pn_ssl_get_protocol_name(pn_ssl_t *ssl, char *OUTPUT, size_t MAX_OUTPUT_SIZ
   %}
 %ignore pn_sasl_recv;
 
+%rename(pn_ssl_get_peer_hostname) wrap_pn_ssl_get_peer_hostname;
+%inline %{
+  int wrap_pn_ssl_get_peer_hostname(pn_ssl_t *ssl, char *OUTPUT, size_t *OUTPUT_SIZE) {
+    ssize_t size = pn_ssl_get_peer_hostname(ssl, OUTPUT, *OUTPUT_SIZE);
+    if (size >= 0) {
+      *OUTPUT_SIZE = size;
+    } else {
+      *OUTPUT_SIZE = 0;
+    }
+    return size;
+  }
+  %}
+%ignore pn_ssl_get_peer_hostname;
+
 %include "proton/cproton.i"
