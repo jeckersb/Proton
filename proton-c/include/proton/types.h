@@ -255,6 +255,8 @@ typedef struct pn_collector_t pn_collector_t;
 
 typedef struct pn_transport_t pn_transport_t;
 
+  typedef struct pn_rubyref_t pn_rubyref_t;
+
 /** @}
  */
 #ifdef __cplusplus

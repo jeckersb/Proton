@@ -30,6 +30,7 @@
 #include <proton/url.h>
 #include <proton/reactor.h>
 #include <proton/handlers.h>
+#include <proton/rubyref.h>
 
 #include <uuid/uuid.h>
 %}
@@ -493,4 +494,68 @@ bool pn_ssl_get_protocol_name(pn_ssl_t *ssl, char *OUTPUT, size_t MAX_OUTPUT_SIZ
 
   %}
 
+%inline %{
+  VALUE pn_rubyref_global_variable_array() {
+    VALUE result = rb_gv_get("PROTON_RUBYREF_ARRAY");
+    if (result == Qnil) {
+      result = rb_ary_new();
+      rb_gv_set("PROTON_RUBYREF_ARRAY", result);
+    }
+    return result;
+  }
+
+  void pn_rubyref_free_existing_object(pn_rubyref_t *rubyref) {
+    void *existing = pn_rubyref_get_ruby_object(rubyref);
+
+    if(existing) {
+      VALUE array = pn_rubyref_global_variable_array();
+      rb_ary_delete(array, ((VALUE )existing));
+    }
+  }
+  %}
+
+%rename(pn_rubyref_set_ruby_object) wrap_pn_rubyref_set_ruby_object;
+%inline %{
+  int wrap_pn_rubyref_set_ruby_object(pn_rubyref_t *rubyref, void *object) {
+    // free any existing object
+    pn_rubyref_free_existing_object(rubyref);
+    if(object) {
+      // get the global hash
+      VALUE array = pn_rubyref_global_variable_array();
+      // add the new object to the global hash
+      rb_ary_push(array, ((VALUE )object));
+    }
+    // call the library function
+    pn_rubyref_set_ruby_object(rubyref, object);
+  }
+  %}
+%ignore pn_rubyref_set_ruby_object;
+
+%rename(pn_rubyref_free) wrap_pn_rubyref_free;
+%inline %{
+  void wrap_pn_rubyref_free(pn_rubyref_t *rubyref) {
+    // free any existing object
+    pn_rubyref_free_existing_object(rubyref);
+    // call library function
+    pn_rubyref_free(rubyref);
+  }
+  %}
+%ignore pn_rubyref_free;
+
+%include "proton/rubyref.h"
+
+%inline %{
+  void *pn_rb2void(VALUE object) {
+    return (void *)object;
+  }
+
+  VALUE pn_void2rb(void *object) {
+    if (!object) {
+      return Qnil;
+    } else {
+      return (VALUE)object;
+    }
+  }
+
+  %}
 %include "proton/cproton.i"

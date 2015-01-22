@@ -56,7 +56,8 @@ typedef enum {
   CID_pn_selector,
   CID_pn_selectable,
 
-  CID_pn_url
+  CID_pn_url,
+  CID_pn_rubyref
 } pn_cid_t;
 
 #endif /* cid.h */

@@ -289,6 +289,7 @@ set (qpid-proton-core
   src/parser.c
   src/scanner.c
   src/types.c
+  src/rubyref.c
 
   src/framing/framing.c
 

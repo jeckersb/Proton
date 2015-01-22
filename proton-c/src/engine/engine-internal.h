@@ -33,6 +33,10 @@ typedef enum pn_endpoint_type_t {CONNECTION, SESSION, SENDER, RECEIVER} pn_endpo
 
 typedef struct pn_endpoint_t pn_endpoint_t;
 
+struct pn_rubyref_t {
+  void *ruby_object;
+};
+
 struct pn_condition_t {
   pn_string_t *name;
   pn_string_t *description;
