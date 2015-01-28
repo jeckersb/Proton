@@ -2,6 +2,8 @@ require 'qpid_proton'
 
 class Farkle
 
+  attr_accessor :parent
+
   def initialize(value, parent)
     # puts "Creating a farkle with a value of #{value}..."
     @value = value
@@ -21,55 +23,58 @@ class Farkle
 
 end
 
-rubyrefs = []
-rubyref_class = nil
+$rubyrefs = []
+$rubyref_class = nil
 
 MAXIMUM = 100000
 
 puts "Creating #{MAXIMUM} objects."
 
-(1..MAXIMUM).each do |which|
-  rubyref = Cproton.pn_rubyref
-  rubyref_class = rubyref.class if rubyref_class.nil?
+(1...MAXIMUM).each do |which|
+  rubyref = Cproton::RubyRef.new
+  $rubyref_class = rubyref.class if $rubyref_class.nil?
   farkle = Farkle.new(which, rubyref)
-  Cproton.pn_rubyref_set_ruby_object(rubyref, Cproton.pn_rb2void(farkle))
-  rubyrefs << rubyref
+  rubyref.object = farkle
+  $rubyrefs << rubyref
+  rubyref = nil
 
   # add an extra, empty rubyref
-  rubyrefs << Cproton.pn_rubyref
+  $rubyrefs << Cproton::RubyRef.new
 
   # release objects if we're past the threshold
-  while rubyrefs.size > (MAXIMUM / 10).to_i
+  while $rubyrefs.size >= (MAXIMUM / 10).to_i
     # puts "Deleting a reference."
-    discarded = rubyrefs.delete_at(0)
-    Cproton.pn_rubyref_free(discarded)
+    discarded = $rubyrefs.delete_at(0)
+    discarded.object.parent = nil unless discarded.object.nil?
+    # Cproton.pn_rubyref_free(discarded)
   end
 end
 
 puts "Running garbage collection."
 GC.start
 
-puts "Counting..."
-count = 0
-rubyrefs.each {|rubyref| count += 1 unless Cproton.pn_void2rb(Cproton.pn_rubyref_get_ruby_object(rubyref)).nil? }
+puts "Some sample references:"
+$rubyrefs.each { |rubyref| puts rubyref.object unless rubyref.object.nil? }
 
-puts "There are #{rubyrefs.size} references, of which #{count} have Farkles."
-puts "There are #{ObjectSpace.each_object(Farkle).count} Farkles."
-puts "There are #{ObjectSpace.each_object(rubyref_class).count} rubyrefs."
+def object_status
+  puts "Counting..."
+  count = 0
+  $rubyrefs.each {|rubyref| count += 1 unless rubyref.object.nil? }
 
-# puts "Let's look at them:"
-# rubyrefs.each do |rubyref|
-#   puts "     #{Cproton.pn_void2rb(Cproton.pn_rubyref_get_ruby_object(rubyref))}"
-# end
-
-rubyrefs.each do |rubyref|
-  Cproton.pn_rubyref_free(rubyref)
+  puts "There are #{$rubyrefs.size} references, of which #{count} have Farkles."
+  puts "There are #{ObjectSpace.each_object(Farkle).count} Farkles."
+  puts "There are #{ObjectSpace.each_object($rubyref_class).count} rubyrefs."
 end
+
+object_status
 
 puts "Sleeping for a bit..."
 
 sleep 10
 
-puts "There are #{rubyrefs.size} objects in the rubyrefs array."
-puts "There are #{ObjectSpace.each_object(Farkle).count} Farkles."
-puts "There are #{ObjectSpace.each_object(rubyref_class).count} rubyrefs."
+puts "Emptying out our array..."
+$rubyrefs.clear
+puts "Running garbage collection."
+GC.start
+
+object_status

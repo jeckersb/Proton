@@ -18,6 +18,9 @@
 #++
 
 require "cproton"
+
+Cproton.Init_rubyref
+
 require "date"
 
 if RUBY_VERSION < "1.9"
