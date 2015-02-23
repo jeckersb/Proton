@@ -618,4 +618,45 @@ bool pn_ssl_get_protocol_name(pn_ssl_t *ssl, char *OUTPUT, size_t MAX_OUTPUT_SIZ
   %}
 %ignore pn_ssl_get_peer_hostname;
 
+%inline %{
+  typedef struct {
+    VALUE handler_key;
+  } pni_rbhandler_t;
+
+  static pni_rbhandler_t *pni_rbhandler(pn_handler_t *handler) {
+    return (pni_rbhandler_t *) pn_handler_mem(handler);
+  }
+
+  static void pni_rbdispatch(pn_handler_t *handler, pn_event_t *event, pn_event_type_t type) {
+    pni_rbhandler_t *rbh = pni_rbhandler(handler);
+    VALUE ary = rb_ary_new();
+    VALUE rbhandler = pni_ruby_get_from_registry(rbh->handler_key);
+
+    rb_ary_push(ary, rbhandler);
+    rb_ary_push(ary, rb_intern("dispatch"));
+    rb_ary_push(ary, SWIG_NewPointerObj(event, SWIGTYPE_p_pn_event_t, 0));
+    rb_ary_push(ary, INT2FIX(type));
+
+    rb_funcall(rbhandler, rb_intern("dispatch"), 2, SWIG_NewPointerObj(event, SWIGTYPE_p_pn_event_t, 0), INT2FIX(type));
+  }
+
+  static void pni_rbhandler_finalize(pn_handler_t *handler) {
+    pni_rbhandler_t *rbh = pni_rbhandler(handler);
+    pni_ruby_delete_from_registry(rbh->handler_key);
+  }
+
+  pn_handler_t *pn_rbhandler(VALUE handler) {
+    pn_handler_t *chandler = pn_handler_new(pni_rbdispatch, sizeof(pni_rbhandler_t), pni_rbhandler_finalize);
+    pni_rbhandler_t *rhy = pni_rbhandler(chandler);
+
+    VALUE ruby_key = rb_class_new_instance(0, NULL, rb_cObject);
+    pni_ruby_add_to_registry(ruby_key, handler);
+
+    rhy->handler_key = ruby_key;
+
+    return chandler;
+  }
+
+%}
+
 %include "proton/cproton.i"
