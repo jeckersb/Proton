@@ -111,6 +111,11 @@ module Qpid
     class SSLUnavailableError < SSLError
     end
 
+    # Raised when a message is rejected.
+    #
+    class Reject < ProtonError
+    end
+
   end
 
 end
