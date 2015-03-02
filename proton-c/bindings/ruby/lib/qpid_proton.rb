@@ -39,6 +39,7 @@ require "util/wrapper"
 require "util/class_wrapper"
 require "util/engine"
 require "util/uuid"
+require "util/timeout"
 
 # Types
 require "types/strings"
