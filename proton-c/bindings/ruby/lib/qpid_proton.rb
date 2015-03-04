@@ -41,6 +41,7 @@ require "util/engine"
 require "util/uuid"
 require "util/timeout"
 require "util/handler"
+require "util/reactor"
 
 # Types
 require "types/strings"
