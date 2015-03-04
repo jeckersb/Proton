@@ -37,6 +37,13 @@ module Qpid::Proton
     # be generated.
     NONE = event_type(:PN_EVENT_NONE)
 
+    # A reactor has been started.
+    REACTOR_INIT = event_type(:PN_REACTOR_INIT)
+    # A reactor has no more events to process.
+    REACTOR_QUIESCED = event_type(:PN_REACTOR_QUIESCED)
+    # A reactor has been stopred.
+    REACTOR_FINAL = event_type(:PN_REACTOR_FINAL)
+
     # A timer event has occurred.
     TIMER_TASK = event_type(:PN_TIMER_TASK)
 
@@ -196,7 +203,7 @@ module Qpid::Proton
       #    handlers.
       #
       def dispatch(handler, type = nil)
-        type = self.type if type.nil?
+        type = @dict[:type] if type.nil?
         if handler.instance_of? Qpid::Proton::Handler::WrappedHandler
           Cproton.pn_handler_dispatch(handler.impl, @impl, type.number)
         else
@@ -207,6 +214,24 @@ module Qpid::Proton
             end
           end
         end
+      end
+
+      # Returns the reactor for this event.
+      #
+      # @return [Reactor, nil] The reactor.
+      #
+      def reactor
+        impl = Cproton.pn_event_reactor(@impl)
+        Qpid::Proton::Util::ClassWrapper::WRAPPERS["pn_reactor"].call(impl)
+      end
+
+      # Returns the container for this event.
+      #
+      # @return [Container, nil] The container.
+      #
+      def container
+        rtor = self.reactor
+        rtor if rtor.is_a? Qpid::Proton::Reactor::Container
       end
 
       # Returns the transport for this event.
