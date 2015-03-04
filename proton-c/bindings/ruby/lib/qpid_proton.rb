@@ -101,6 +101,7 @@ require "reactor/acceptor"
 require "reactor/reactor"
 require "reactor/ssl_config"
 require "reactor/global_overrides"
+require "reactor/urls"
 
 module Qpid::Proton
   # @private
