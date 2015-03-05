@@ -537,6 +537,9 @@ PN_EXTERN uint64_t pn_transport_get_frames_input(const pn_transport_t *transport
  */
 PN_EXTERN pn_connection_t *pn_transport_connection(pn_transport_t *transport);
 
+PN_EXTERN pn_transport_t *pn_transport_get_mine(void);
+PN_EXTERN void pn_transport_set_mine(pn_transport_t *mine);
+
 #ifdef __cplusplus
 }
 #endif

@@ -2757,3 +2757,14 @@ pn_connection_t *pn_transport_connection(pn_transport_t *transport)
   assert(transport);
   return transport->connection;
 }
+
+static pn_transport_t *mine_own_transport = NULL;
+
+
+pn_transport_t *pn_transport_get_mine(void) {
+  return mine_own_transport;
+}
+
+void pn_transport_set_mine(pn_transport_t *mine) {
+  mine_own_transport = mine;
+}
