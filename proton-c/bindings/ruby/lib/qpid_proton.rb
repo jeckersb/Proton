@@ -53,3 +53,23 @@ require "messenger/tracker_status"
 require "messenger/tracker"
 require "messenger/selectable"
 require "messenger/messenger"
+
+module Qpid::Proton
+  # @private
+  def self.registry
+    @registry ||= {}
+    return @registry
+  end
+
+  # @private
+  def self.add_to_registry(key, value)
+    registry = self.registry
+    registry[key] = value
+  end
+
+  # @private
+  def self.get_from_registry(key)
+    registry = self.registry
+    return registry[key]
+  end
+end

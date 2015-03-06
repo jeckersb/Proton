@@ -1,3 +1,4 @@
+
 /*
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -33,6 +34,7 @@ struct pn_record_t {
   size_t size;
   size_t capacity;
   pni_field_t *fields;
+  pn_record_callback_fn *callback;
 };
 
 static void pn_record_initialize(void *object)
@@ -41,6 +43,7 @@ static void pn_record_initialize(void *object)
   record->size = 0;
   record->capacity = 0;
   record->fields = NULL;
+  record->callback = NULL;
 }
 
 static void pn_record_finalize(void *object)
@@ -128,11 +131,13 @@ void *pn_record_get(pn_record_t *record, pn_handle_t key)
 void pn_record_set(pn_record_t *record, pn_handle_t key, void *value)
 {
   assert(record);
-
   pni_field_t *field = pni_record_find(record, key);
   if (field) {
     void *old = field->value;
     field->value = value;
+    if(pn_record_has_callback(record)) {
+      (record->callback)(record, old);
+    }
     pn_class_incref(field->clazz, value);
     pn_class_decref(field->clazz, old);
   }
@@ -144,10 +149,32 @@ void pn_record_clear(pn_record_t *record)
   for (size_t i = 0; i < record->size; i++) {
     pni_field_t *field = &record->fields[i];
     pn_class_decref(field->clazz, field->value);
+    if(pn_record_has_callback(record)) {
+      (record->callback)(record, field->value);
+    }
     field->key = 0;
     field->clazz = NULL;
     field->value = NULL;
   }
   record->size = 0;
   pn_record_def(record, PN_LEGCTX, PN_VOID);
+}
+
+void pn_record_set_callback(pn_record_t *record, pn_record_callback_fn *callback)
+{
+  assert(record);
+  record->callback = callback;
+}
+
+bool pn_record_has_callback(pn_record_t *record)
+{
+  assert(record);
+  if(record->callback)
+    {
+      return true;
+    }
+  else
+    {
+      return false;
+    }
 }

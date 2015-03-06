@@ -451,4 +451,120 @@ bool pn_ssl_get_protocol_name(pn_ssl_t *ssl, char *OUTPUT, size_t MAX_OUTPUT_SIZ
 %ignore pn_messenger_recv;
 %ignore pn_messenger_work;
 
+%immutable PN_RBREF;
+
+%inline %{
+  extern const pn_class_t *PN_RBREF;
+
+#define CID_pn_rbref CID_pn_void
+#define pn_rbref_new NULL
+#define pn_rbref_initialize NULL
+#define pn_rbref_finalize NULL
+#define pn_rbref_free NULL
+#define pn_rbref_hashcode pn_void_hashcode
+#define pn_rbref_compare pn_void_compare
+#define pn_rbref_inspect pn_void_inspect
+
+  static void pn_rbref_incref(void *object) {
+    // no reference counting in Ruby
+  }
+
+  static void pn_rbref_decref(void *object) {
+    // no reference counting in Ruby
+  }
+
+  static int pn_rbref_refcount(void *object) {
+    return 1;
+  }
+
+  static const pn_class_t *pn_rbref_reify(void *object) {
+    return PN_RBREF;
+  }
+
+  const pn_class_t PNI_RBREF = PN_METACLASS(pn_rbref);
+  const pn_class_t *PN_RBREF = &PNI_RBREF;
+
+  void *pn_rb2void(VALUE object) {
+    return (void *)object;
+  }
+
+  VALUE pn_void2rb(void *object) {
+    if (!object) {
+      return Qnil;
+    } else {
+      return (VALUE)object;
+    }
+  }
+
+%}
+
+%inline %{
+
+  VALUE pni_ruby_proton_registry() {
+    VALUE mQpid = rb_define_module("Qpid");
+    VALUE mProton = rb_define_module_under(mQpid, "Proton");
+
+    VALUE result = rb_funcall(mProton, rb_intern("registry"), 0);
+
+    return result;
+  }
+
+  void pni_ruby_add_to_registry(VALUE key, VALUE value) {
+    VALUE mQpid = rb_define_module("Qpid");
+    VALUE mProton = rb_define_module_under(mQpid, "Proton");
+
+    VALUE result = rb_funcall(mProton, rb_intern("add_to_registry"), 2, key, value);
+  }
+
+  VALUE pni_ruby_get_from_registry(VALUE key) {
+    VALUE mQpid = rb_define_module("Qpid");
+    VALUE mProton = rb_define_module_under(mQpid, "Proton");
+
+    rb_funcall(mProton, rb_intern("get_from_registry"), 1, key);
+  }
+
+  void pni_ruby_delete_from_registry(VALUE stored_key) {
+    VALUE registry = pni_ruby_proton_registry();
+
+    // delete the entry
+    VALUE result = rb_funcall(registry, rb_intern("delete"), 1, stored_key);
+  }
+
+%}
+
+%rename(pn_record_set) wrap_pn_record_set;
+%inline %{
+
+  void pni_ruby_delete_record(pn_record_t *record, void *record_value) {
+  VALUE stored_value = (VALUE )record_value;
+  pni_ruby_delete_from_registry(stored_value);
+  }
+
+  void wrap_pn_record_set(pn_record_t *record, pn_handle_t key, void *value) {
+    VALUE rb_key = rb_class_new_instance(0, NULL, rb_cObject);
+
+    // if the record does not have a callback then register one
+    if(!pn_record_has_callback(record)) {
+      pn_record_set_callback(record, pni_ruby_delete_record);
+    }
+
+    pni_ruby_add_to_registry(rb_key, (VALUE )value);
+
+    // call the library method
+    pn_record_set(record, key, rb_key);
+  }
+%}
+%ignore pn_record_set;
+
+%rename(pn_record_get) wrap_pn_record_get;
+%inline %{
+  void *wrap_pn_record_get(pn_record_t *record, pn_handle_t key) {
+    VALUE key_value = (VALUE )pn_record_get(record, key);
+    VALUE stored_value = pni_ruby_get_from_registry(key_value);
+
+    return (void *)stored_value;
+  }
+%}
+%ignore pn_record_get;
+
 %include "proton/cproton.i"

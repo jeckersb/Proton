@@ -44,6 +44,7 @@ typedef struct pn_hash_t pn_hash_t;
 typedef void *(*pn_iterator_next_t)(void *state);
 typedef struct pn_iterator_t pn_iterator_t;
 typedef struct pn_record_t pn_record_t;
+typedef void (pn_record_callback_fn)(pn_record_t*, void *);
 
 struct pn_class_t {
   const char *name;
@@ -269,6 +270,8 @@ PN_EXTERN bool pn_record_has(pn_record_t *record, pn_handle_t key);
 PN_EXTERN void *pn_record_get(pn_record_t *record, pn_handle_t key);
 PN_EXTERN void pn_record_set(pn_record_t *record, pn_handle_t key, void *value);
 PN_EXTERN void pn_record_clear(pn_record_t *record);
+PN_EXTERN void pn_record_set_callback(pn_record_t *record, pn_record_callback_fn *callback);
+PN_EXTERN bool pn_record_has_callback(pn_record_t *record);
 
 #ifdef __cplusplus
 }
